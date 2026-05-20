@@ -26,38 +26,50 @@ create table volunteers (
   updated_at timestamptz not null default now()
 );
 
--- 3. TASKS
-create table tasks (
+-- 3. SUB_TASK_COMPLETIONS — per-event check-off state for static sub-tasks
+-- (sub_task_id is a string id from src/lib/task-categories.ts, e.g. 'set-up.sound')
+create table sub_task_completions (
   id uuid primary key default gen_random_uuid(),
   event_id uuid not null references events(id) on delete cascade,
-  title text not null,
-  info text,
+  sub_task_id text not null,
   is_complete boolean not null default false,
-  sort_order integer not null default 0,
-  created_at timestamptz not null default now()
+  updated_at timestamptz not null default now(),
+  unique (event_id, sub_task_id)
 );
 
--- 4. TASK_ASSIGNMENTS (links volunteers <-> tasks, many-to-many)
-create table task_assignments (
+-- 4. CATEGORY_ASSIGNMENTS — per-event volunteer-to-task-category assignments
+-- (category_id is a string id from src/lib/task-categories.ts, e.g. 'set-up')
+create table category_assignments (
   id uuid primary key default gen_random_uuid(),
-  task_id uuid not null references tasks(id) on delete cascade,
+  event_id uuid not null references events(id) on delete cascade,
+  category_id text not null,
   volunteer_id uuid not null references volunteers(id) on delete cascade,
   created_at timestamptz not null default now(),
-  unique (task_id, volunteer_id)
+  unique (event_id, category_id, volunteer_id)
 );
 
--- Lock all four tables (RLS = Row Level Security)
+-- Lock all tables (RLS = Row Level Security)
 alter table events enable row level security;
 alter table volunteers enable row level security;
-alter table tasks enable row level security;
-alter table task_assignments enable row level security;
+alter table sub_task_completions enable row level security;
+alter table category_assignments enable row level security;
 
--- Open public-API access to just what Helpers need.
--- (Tasks/task_assignments stay closed at this level; Manager will access via service_role on the server.)
+-- Public-API access for Helper-side reads/writes.
 grant select on events to anon, authenticated;
 grant select, insert, update on volunteers to anon, authenticated;
+-- sub_task_completions and category_assignments: NO public grants.
+-- Manager accesses these via server-side code using the service_role/secret key.
 
--- RLS policies: the actual "what's allowed" rules.
+-- Server-side (Manager) full access via the secret key.
+-- With "Automatically expose new tables" disabled in Supabase settings,
+-- service_role needs explicit grants — otherwise the sb_secret_ key gets
+-- "permission denied" errors.
+grant all on table events to service_role;
+grant all on table volunteers to service_role;
+grant all on table sub_task_completions to service_role;
+grant all on table category_assignments to service_role;
+
+-- RLS policies for publicly-accessible tables.
 create policy "Anyone can read events"
 on events for select
 to anon, authenticated
