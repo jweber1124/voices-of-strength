@@ -1,4 +1,4 @@
--- Voices of Strength Event Manager — database schema
+-- Voices of Strength Event Manager — database schema (current state)
 -- Apply by pasting into the Supabase SQL Editor and running.
 
 -- 1. EVENTS
@@ -16,7 +16,8 @@ create table volunteers (
   event_id uuid not null references events(id) on delete cascade,
   first_name text not null,
   last_name text not null,
-  time_available text,
+  arrival_time time,
+  departure_time time,
   cell text,
   email text,
   categories text[] not null default '{}',
@@ -54,7 +55,7 @@ alter table task_assignments enable row level security;
 -- Open public-API access to just what Helpers need.
 -- (Tasks/task_assignments stay closed at this level; Manager will access via service_role on the server.)
 grant select on events to anon, authenticated;
-grant select, insert on volunteers to anon, authenticated;
+grant select, insert, update on volunteers to anon, authenticated;
 
 -- RLS policies: the actual "what's allowed" rules.
 create policy "Anyone can read events"
@@ -72,7 +73,12 @@ on volunteers for insert
 to anon, authenticated
 with check (true);
 
+create policy "Anyone can update volunteers"
+on volunteers for update
+to anon, authenticated
+using (true)
+with check (true);
+
 -- Seed one starter event so volunteer signups have something to attach to.
--- Rename and set the real date via the Manager UI once that's built.
 insert into events (name, event_date, status) values
   ('Voices of Strength Open Mic — Next Event', current_date + interval '30 days', 'current');
