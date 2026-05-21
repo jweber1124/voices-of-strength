@@ -63,17 +63,21 @@ export default async function ManagerHome() {
     .map((c) => c.sub_task_id as string);
 
   const assignmentsByCategory: Record<string, string[]> = {};
+  const assignmentsByVolunteer: Record<string, string[]> = {};
   for (const a of assignmentsRes.data ?? []) {
     const cat = a.category_id as string;
     const vol = a.volunteer_id as string;
     if (!assignmentsByCategory[cat]) assignmentsByCategory[cat] = [];
     assignmentsByCategory[cat].push(vol);
+    if (!assignmentsByVolunteer[vol]) assignmentsByVolunteer[vol] = [];
+    assignmentsByVolunteer[vol].push(cat);
   }
 
   const volunteerSummaries = volunteers.map((v) => ({
     id: v.id,
     first_name: v.first_name,
     last_name: v.last_name,
+    categories: v.categories,
   }));
 
   return (
@@ -175,7 +179,13 @@ export default async function ManagerHome() {
                 No helpers signed up yet.
               </div>
             ) : (
-              volunteers.map((v) => <HelperCard key={v.id} volunteer={v} />)
+              volunteers.map((v) => (
+                <HelperCard
+                  key={v.id}
+                  volunteer={v}
+                  assignedCategoryIds={assignmentsByVolunteer[v.id] ?? []}
+                />
+              ))
             )}
           </aside>
         </div>

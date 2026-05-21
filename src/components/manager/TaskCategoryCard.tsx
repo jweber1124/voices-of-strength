@@ -3,11 +3,13 @@
 import { useState, useTransition } from 'react';
 import type { TaskCategory, SubTask } from '@/lib/task-categories';
 import { toggleSubTask, toggleCategoryAssignment } from '@/lib/manager-actions';
+import { needsConfirmation } from '@/lib/category-rules';
 
 type VolunteerSummary = {
   id: string;
   first_name: string;
   last_name: string;
+  categories: string[];
 };
 
 type Props = {
@@ -17,6 +19,16 @@ type Props = {
   assignedVolunteerIds: string[];
   allVolunteers: VolunteerSummary[];
 };
+
+function scrollToHelper(volunteerId: string) {
+  const el = document.getElementById(`helper-${volunteerId}`);
+  if (!el) return;
+  el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  el.classList.add('ring-2', 'ring-zinc-300');
+  window.setTimeout(() => {
+    el.classList.remove('ring-2', 'ring-zinc-300');
+  }, 1500);
+}
 
 export function TaskCategoryCard({
   eventId,
@@ -71,14 +83,27 @@ export function TaskCategoryCard({
                   No helpers assigned yet
                 </span>
               ) : (
-                assignedVolunteers.map((v) => (
-                  <span
-                    key={v.id}
-                    className="text-xs rounded-full bg-zinc-100 text-zinc-900 px-2.5 py-1 font-medium"
-                  >
-                    {v.first_name} {v.last_name}
-                  </span>
-                ))
+                assignedVolunteers.map((v) => {
+                  const isUnconfirmed = needsConfirmation(category.id, v.categories);
+                  const pillClass = isUnconfirmed
+                    ? 'bg-red-500/15 border border-red-500/40 text-red-100 hover:bg-red-500/25'
+                    : 'bg-zinc-100 text-zinc-900 hover:bg-white';
+                  return (
+                    <button
+                      key={v.id}
+                      type="button"
+                      onClick={() => scrollToHelper(v.id)}
+                      title={
+                        isUnconfirmed
+                          ? `${v.first_name} ${v.last_name} — availability not confirmed`
+                          : 'Show helper card'
+                      }
+                      className={`text-xs rounded-full px-2.5 py-1 font-medium transition-colors ${pillClass}`}
+                    >
+                      {v.first_name} {v.last_name}
+                    </button>
+                  );
+                })
               )}
               <button
                 type="button"
@@ -98,10 +123,18 @@ export function TaskCategoryCard({
                 ) : (
                   allVolunteers.map((v) => {
                     const isAssigned = assignedSet.has(v.id);
+                    const isPreferredFit = !needsConfirmation(category.id, v.categories);
                     return (
                       <label
                         key={v.id}
-                        className="flex items-center gap-2 cursor-pointer text-sm py-0.5"
+                        className={`flex items-center gap-2 cursor-pointer text-sm py-0.5 ${
+                          isPreferredFit ? '' : 'opacity-50'
+                        }`}
+                        title={
+                          isPreferredFit
+                            ? undefined
+                            : `${v.first_name} did not sign up for this role — assigning will flag for confirmation`
+                        }
                       >
                         <input
                           type="checkbox"
@@ -166,11 +199,7 @@ function SubTaskRow({
 }) {
   return (
     <li>
-      <label
-        className={`flex items-start gap-3 px-4 py-3 cursor-pointer hover:bg-zinc-800/40 transition-colors ${
-          checked ? '' : ''
-        }`}
-      >
+      <label className="flex items-start gap-3 px-4 py-3 cursor-pointer hover:bg-zinc-800/40 transition-colors">
         <input
           type="checkbox"
           checked={checked}

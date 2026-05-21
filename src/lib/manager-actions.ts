@@ -26,6 +26,40 @@ export async function toggleSubTask(
   revalidatePath('/manager');
 }
 
+export async function confirmAssignment(
+  volunteerId: string,
+  categoryId: string,
+) {
+  if (!volunteerId || !categoryId) {
+    throw new Error('Missing volunteer or category id');
+  }
+
+  const { data: volunteer, error: readError } = await supabaseAdmin
+    .from('volunteers')
+    .select('categories')
+    .eq('id', volunteerId)
+    .single();
+  if (readError) throw new Error(readError.message);
+
+  const existing: string[] = ((volunteer?.categories ?? []) as string[]);
+  if (existing.includes(categoryId)) {
+    revalidatePath('/manager');
+    return;
+  }
+
+  const { error: writeError } = await supabaseAdmin
+    .from('volunteers')
+    .update({
+      categories: [...existing, categoryId],
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', volunteerId);
+  if (writeError) throw new Error(writeError.message);
+
+  revalidatePath('/manager');
+  revalidatePath('/helper');
+}
+
 export async function toggleCategoryAssignment(
   eventId: string,
   categoryId: string,
