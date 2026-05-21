@@ -70,6 +70,7 @@ export async function submitSignup(formData: FormData) {
     savedId = data.id;
   }
 
-  revalidatePath('/');
+  revalidatePath('/helper');
+  revalidatePath('/manager');
   redirect(`/thank-you?volunteerId=${savedId}`);
 }

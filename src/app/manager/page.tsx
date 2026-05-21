@@ -1,8 +1,10 @@
+import Link from 'next/link';
 import { supabaseAdmin } from '@/lib/supabase-admin';
 import { TASK_CATEGORIES } from '@/lib/task-categories';
 import { HelperCard, type Volunteer } from '@/components/manager/HelperCard';
 import { TaskCategoryCard } from '@/components/manager/TaskCategoryCard';
 import { logout } from '@/lib/manager-auth';
+import { ExtendSessionButton } from '@/components/manager/ExtendSessionButton';
 
 export default async function ManagerHome() {
   const { data: events } = await supabaseAdmin
@@ -127,14 +129,23 @@ function Header({
           {volunteerCount === 1 ? 'helper' : 'helpers'} signed up
         </p>
       </div>
-      <form action={logout}>
-        <button
-          type="submit"
+      <div className="flex items-center gap-4 shrink-0">
+        <ExtendSessionButton />
+        <Link
+          href="/"
           className="text-sm text-zinc-400 hover:text-zinc-100 transition-colors"
         >
-          Sign out
-        </button>
-      </form>
+          ← Portal
+        </Link>
+        <form action={logout}>
+          <button
+            type="submit"
+            className="text-sm text-zinc-400 hover:text-zinc-100 transition-colors"
+          >
+            Sign out
+          </button>
+        </form>
+      </div>
     </header>
   );
 }

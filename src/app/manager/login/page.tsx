@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { login } from '@/lib/manager-auth';
 
 type Props = {
@@ -9,7 +10,16 @@ export default async function ManagerLoginPage({ searchParams }: Props) {
 
   return (
     <main className="min-h-screen bg-zinc-950 py-10 px-4 flex items-center justify-center text-zinc-100">
-      <div className="max-w-sm w-full bg-zinc-900 rounded-xl border border-zinc-800 p-8">
+      <div className="max-w-sm w-full">
+        <div className="mb-4">
+          <Link
+            href="/"
+            className="text-sm text-zinc-400 hover:text-zinc-100 transition-colors"
+          >
+            ← Volunteer Portal
+          </Link>
+        </div>
+        <div className="bg-zinc-900 rounded-xl border border-zinc-800 p-8">
         <h1 className="text-2xl font-semibold text-center mb-1">Manager</h1>
         <p className="text-sm text-zinc-400 text-center mb-6">
           Voices of Strength Open Mic
@@ -43,6 +53,7 @@ export default async function ManagerLoginPage({ searchParams }: Props) {
             Sign in
           </button>
         </form>
+        </div>
       </div>
     </main>
   );

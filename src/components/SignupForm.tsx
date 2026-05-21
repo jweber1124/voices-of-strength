@@ -34,6 +34,7 @@ export function SignupForm({ counts, initial }: Props) {
     new Set(initial?.categories ?? []),
   );
   const [note, setNote] = useState(initial?.note ?? '');
+  const [categoryError, setCategoryError] = useState('');
 
   function adjustTime(current: string, deltaMinutes: number): string {
     const [h, m] = current.split(':').map(Number);
@@ -57,6 +58,14 @@ export function SignupForm({ counts, initial }: Props) {
   return (
     <form
       action={submitSignup}
+      onSubmit={(e) => {
+        if (selectedCats.size === 0) {
+          e.preventDefault();
+          setCategoryError('Please select at least one role to help with.');
+        } else {
+          setCategoryError('');
+        }
+      }}
       className="space-y-6 bg-zinc-900 rounded-xl border border-zinc-800 p-6"
     >
       {isEdit && initial?.id && (
@@ -122,11 +131,16 @@ export function SignupForm({ counts, initial }: Props) {
       </div>
 
       <fieldset>
-        <legend className="font-medium text-zinc-100">Where can you help?</legend>
+        <legend className="font-medium text-zinc-100">
+          Where can you help? <span className="text-red-400">*</span>
+        </legend>
         <p className="text-sm text-zinc-400 mt-1 mb-3">
-          Check all that apply. Counts show how many people have already signed
-          up for that role.
+          Check at least one. Counts show how many people have already signed up
+          for that role.
         </p>
+        {categoryError && (
+          <p className="mb-3 text-sm text-red-400">{categoryError}</p>
+        )}
         <div className="space-y-2">
           {CATEGORIES.map((cat) => {
             const count = counts[cat.id] ?? 0;
@@ -173,7 +187,7 @@ export function SignupForm({ counts, initial }: Props) {
           rows={3}
           value={note}
           onChange={(e) => setNote(e.target.value)}
-          placeholder="Anything we should know? Dietary restrictions, mobility considerations, etc."
+          placeholder="Anything we should know?"
           className="w-full rounded-lg border border-zinc-700 bg-zinc-800 text-zinc-100 placeholder:text-zinc-500 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-zinc-400"
         />
       </div>

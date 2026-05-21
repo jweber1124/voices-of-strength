@@ -22,9 +22,9 @@ export const CATEGORIES: readonly Category[] = [
   },
   {
     id: 'welcome-table',
-    name: 'Welcome table',
+    name: 'Welcome table & usher',
     description:
-      'Greet attendees, check in performers, distribute food/drink tickets, and facilitate impromptu sign-ups.',
+      'Greet attendees, check in performers, distribute food/drink tickets, and facilitate impromptu sign-ups. Ushers also help direct attendees to open seats.',
   },
   {
     id: 'food-drink',

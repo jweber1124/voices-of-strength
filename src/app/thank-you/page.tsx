@@ -17,14 +17,14 @@ export default async function ThankYou({ searchParams }: Props) {
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           {volunteerId && (
             <Link
-              href={`/?volunteerId=${volunteerId}`}
+              href={`/helper?volunteerId=${volunteerId}`}
               className="rounded-lg border border-zinc-700 px-4 py-2 text-sm text-zinc-100 hover:bg-zinc-800 transition-colors"
             >
               Edit sign-up
             </Link>
           )}
           <Link
-            href="/"
+            href="/helper"
             className="rounded-lg bg-zinc-100 text-zinc-900 px-4 py-2 text-sm font-medium hover:bg-white transition-colors"
           >
             Register another helper
