@@ -2,8 +2,20 @@
 
 import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
+import { headers } from 'next/headers';
 import { supabase } from './supabase';
 import { CATEGORIES } from './categories';
+import { sendConfirmationEmail } from './email';
+
+async function getBaseUrl(): Promise<string> {
+  const h = await headers();
+  const host = h.get('host');
+  if (!host) return '';
+  const proto =
+    h.get('x-forwarded-proto') ||
+    (process.env.NODE_ENV === 'production' ? 'https' : 'http');
+  return `${proto}://${host}`;
+}
 
 export async function submitSignup(formData: FormData) {
   const volunteerId = formData.get('volunteer_id')?.toString().trim() || null;
@@ -68,6 +80,23 @@ export async function submitSignup(formData: FormData) {
       .single();
     if (error) throw new Error(error.message);
     savedId = data.id;
+  }
+
+  // Send confirmation email (don't block redirect on email failure).
+  const baseUrl = await getBaseUrl();
+  if (baseUrl && email) {
+    await sendConfirmationEmail(
+      {
+        id: savedId,
+        first_name: firstName,
+        email,
+        arrival_time: arrivalTime,
+        departure_time: departureTime,
+        categories,
+      },
+      baseUrl,
+      Boolean(volunteerId),
+    );
   }
 
   revalidatePath('/helper');

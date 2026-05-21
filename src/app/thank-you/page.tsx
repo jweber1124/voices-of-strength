@@ -12,7 +12,9 @@ export default async function ThankYou({ searchParams }: Props) {
       <div className="max-w-md w-full bg-zinc-900 rounded-xl border border-zinc-800 p-8 text-center">
         <h1 className="text-2xl font-semibold mb-3">Thank you!</h1>
         <p className="text-zinc-400 mb-6">
-          Your sign-up has been received. We&apos;ll see you at the event.
+          A confirmation email is on its way with event details and a private
+          link to update your availability if anything changes. You can also
+          edit your sign-up right now below.
         </p>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           {volunteerId && (
