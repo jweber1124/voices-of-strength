@@ -25,7 +25,7 @@ export async function submitSignup(formData: FormData) {
   const departureTime = formData.get('departure_time')?.toString().trim() || null;
   const cell = formData.get('cell')?.toString().trim() ?? '';
   const email = formData.get('email')?.toString().trim() ?? '';
-  const note = formData.get('note')?.toString().trim() ?? '';
+  const note = (formData.get('note')?.toString().trim() ?? '').slice(0, 250);
 
   if (!firstName || !lastName || !cell || !email || !arrivalTime || !departureTime) {
     throw new Error('Please fill out all required fields.');

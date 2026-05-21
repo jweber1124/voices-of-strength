@@ -82,7 +82,8 @@ export default async function HelperPage({ searchParams }: PageProps) {
               <p className="text-zinc-500 text-xs uppercase tracking-wider">
                 Headliner
               </p>
-              <p className="text-zinc-300 tabular-nums">
+              <p className="text-zinc-200">{EVENT_DETAILS.headliner}</p>
+              <p className="text-zinc-400 text-xs tabular-nums">
                 {EVENT_DETAILS.times.headliner}
               </p>
             </div>
@@ -90,7 +91,7 @@ export default async function HelperPage({ searchParams }: PageProps) {
               <p className="text-zinc-500 text-xs uppercase tracking-wider">
                 Open mic
               </p>
-              <p className="text-zinc-300 tabular-nums">
+              <p className="text-zinc-200 tabular-nums">
                 {EVENT_DETAILS.times.openMic}
               </p>
             </div>

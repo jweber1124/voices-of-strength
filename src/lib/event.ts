@@ -10,6 +10,7 @@ type Contact = {
 
 export type EventDetails = {
   date: string;
+  headliner: string;
   location: { name: string; address: string };
   times: {
     setUpStart: string;
@@ -24,6 +25,7 @@ export type EventDetails = {
 
 export const EVENT_DETAILS: EventDetails = {
   date: 'Saturday, May 30, 2026',
+  headliner: 'Solis Rough',
   location: {
     name: 'Communities for Recovery',
     address: '4110 Guadalupe St. Bldg. 635, Austin, TX 78751',

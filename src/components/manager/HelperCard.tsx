@@ -71,17 +71,33 @@ export function HelperCard({ volunteer }: { volunteer: Volunteer }) {
           </a>
         )}
         {volunteer.email && (
-          <a
-            href={`mailto:${volunteer.email}?subject=${encodeURIComponent('Voices of Strength Open Mic')}`}
-            className="text-zinc-300 hover:text-zinc-100 underline-offset-2 hover:underline truncate w-fit"
-          >
-            {volunteer.email}
-          </a>
+          <div className="flex items-center gap-2 min-w-0">
+            <a
+              href={`mailto:${volunteer.email}?subject=${encodeURIComponent('Voices of Strength Open Mic')}`}
+              className="text-zinc-300 hover:text-zinc-100 underline-offset-2 hover:underline truncate"
+              title="Open in your default mail app"
+            >
+              {volunteer.email}
+            </a>
+            <a
+              href={
+                `https://mail.google.com/mail/?view=cm&fs=1` +
+                `&to=${encodeURIComponent(volunteer.email)}` +
+                `&su=${encodeURIComponent('Voices of Strength Open Mic')}`
+              }
+              target="_blank"
+              rel="noopener noreferrer"
+              title="Open directly in Gmail web"
+              className="shrink-0 text-xs text-zinc-500 hover:text-zinc-200 underline-offset-2 hover:underline"
+            >
+              Gmail
+            </a>
+          </div>
         )}
       </div>
 
       {volunteer.note && (
-        <div className="mt-3 text-xs text-zinc-400 italic border-l-2 border-zinc-700 pl-2">
+        <div className="mt-3 text-xs text-zinc-400 italic border-l-2 border-zinc-700 pl-2 break-words">
           {volunteer.note}
         </div>
       )}

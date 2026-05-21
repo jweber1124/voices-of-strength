@@ -93,4 +93,4 @@ with check (true);
 
 -- Seed one starter event so volunteer signups have something to attach to.
 insert into events (name, event_date, status) values
-  ('Voices of Strength Open Mic — Next Event', current_date + interval '30 days', 'current');
+  ('Voices of Strength Open Mic', current_date + interval '30 days', 'current');

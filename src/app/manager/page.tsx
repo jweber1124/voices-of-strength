@@ -5,6 +5,8 @@ import { HelperCard, type Volunteer } from '@/components/manager/HelperCard';
 import { TaskCategoryCard } from '@/components/manager/TaskCategoryCard';
 import { logout } from '@/lib/manager-auth';
 import { ExtendSessionButton } from '@/components/manager/ExtendSessionButton';
+import { QRButton } from '@/components/manager/QRButton';
+import { EVENT_DETAILS } from '@/lib/event';
 
 export default async function ManagerHome() {
   const { data: events } = await supabaseAdmin
@@ -79,8 +81,74 @@ export default async function ManagerHome() {
       <div className="max-w-7xl mx-auto">
         <Header eventName={event.name} volunteerCount={volunteers.length} />
 
+        <div className="mb-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-5 text-sm">
+            <p className="text-xs font-medium text-zinc-400 uppercase tracking-wider mb-2">
+              Event details
+            </p>
+            <p className="font-medium text-zinc-100">{EVENT_DETAILS.date}</p>
+            <p className="text-zinc-400">{EVENT_DETAILS.location.name}</p>
+            <p className="text-zinc-400">{EVENT_DETAILS.location.address}</p>
+
+            <div className="mt-4 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1.5 items-baseline">
+              <span className="text-xs text-zinc-500 uppercase tracking-wider">Headliner</span>
+              <span className="text-zinc-200">
+                {EVENT_DETAILS.headliner}
+                <span className="text-zinc-400 tabular-nums"> · {EVENT_DETAILS.times.headliner}</span>
+              </span>
+
+              <span className="text-xs text-zinc-500 uppercase tracking-wider">Open mic</span>
+              <span className="text-zinc-200 tabular-nums">{EVENT_DETAILS.times.openMic}</span>
+
+              <span className="text-xs text-zinc-500 uppercase tracking-wider">Set-up</span>
+              <span className="text-zinc-200 tabular-nums">{EVENT_DETAILS.times.setUpStart}</span>
+
+              <span className="text-xs text-zinc-500 uppercase tracking-wider">Clean-up</span>
+              <span className="text-zinc-200 tabular-nums">ends at {EVENT_DETAILS.times.cleanUpEnd}</span>
+            </div>
+          </div>
+
+          <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-5">
+            <p className="text-xs font-medium text-zinc-400 uppercase tracking-wider mb-3">
+              Resources
+            </p>
+
+            <div className="space-y-4">
+              <div>
+                <p className="text-sm text-zinc-300 mb-2">Performer sign-up form</p>
+                <div className="flex gap-2">
+                  <a
+                    href={EVENT_DETAILS.urls.performerSignup}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm rounded-lg border border-zinc-700 bg-zinc-800 text-zinc-200 px-3 py-1.5 hover:bg-zinc-700 transition-colors"
+                  >
+                    Open form
+                  </a>
+                  <QRButton url={EVENT_DETAILS.urls.performerSignup} label="Performer sign-up form" />
+                </div>
+              </div>
+
+              <div>
+                <p className="text-sm text-zinc-300 mb-2">Eventbrite event</p>
+                <div className="flex gap-2">
+                  <a
+                    href={EVENT_DETAILS.urls.eventbrite}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm rounded-lg border border-zinc-700 bg-zinc-800 text-zinc-200 px-3 py-1.5 hover:bg-zinc-700 transition-colors"
+                  >
+                    Open page
+                  </a>
+                  <QRButton url={EVENT_DETAILS.urls.eventbrite} label="Eventbrite event" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 space-y-4 order-2 lg:order-1">
+          <div className="lg:col-span-2 space-y-4 order-2 lg:order-1 min-w-0">
             {TASK_CATEGORIES.map((category) => (
               <TaskCategoryCard
                 key={category.id}
@@ -93,10 +161,15 @@ export default async function ManagerHome() {
             ))}
           </div>
 
-          <aside className="space-y-3 order-1 lg:order-2">
-            <h2 className="text-xs font-medium text-zinc-400 uppercase tracking-wider">
-              Helpers ({volunteers.length})
-            </h2>
+          <aside className="space-y-3 order-1 lg:order-2 min-w-0">
+            <div className="flex items-center justify-between gap-2">
+              <h2 className="text-xs font-medium text-zinc-400 uppercase tracking-wider">
+                Helpers ({volunteers.length})
+              </h2>
+              {volunteers.some((v) => v.email) && (
+                <EmailAllHelpersLink volunteers={volunteers} />
+              )}
+            </div>
             {volunteers.length === 0 ? (
               <div className="rounded-lg border border-zinc-800 bg-zinc-900 p-4 text-sm text-zinc-400">
                 No helpers signed up yet.
@@ -108,6 +181,45 @@ export default async function ManagerHome() {
         </div>
       </div>
     </main>
+  );
+}
+
+function EmailAllHelpersLink({ volunteers }: { volunteers: Volunteer[] }) {
+  const emails = volunteers
+    .map((v) => v.email)
+    .filter((e): e is string => Boolean(e));
+  if (emails.length === 0) return null;
+
+  const subject = 'Voices of Strength Open Mic';
+  const ccList = EVENT_DETAILS.ccEmails.join(',');
+  const toList = emails.join(',');
+
+  const mailtoHref = `mailto:${toList}?cc=${ccList}&subject=${encodeURIComponent(subject)}`;
+  const gmailHref =
+    `https://mail.google.com/mail/?view=cm&fs=1` +
+    `&to=${encodeURIComponent(toList)}` +
+    `&cc=${encodeURIComponent(ccList)}` +
+    `&su=${encodeURIComponent(subject)}`;
+
+  return (
+    <div className="flex items-center gap-1.5">
+      <a
+        href={mailtoHref}
+        title="Open in your default mail app"
+        className="text-xs rounded-lg border border-zinc-700 bg-zinc-800 text-zinc-200 px-2.5 py-1 hover:bg-zinc-700 transition-colors"
+      >
+        Email all
+      </a>
+      <a
+        href={gmailHref}
+        target="_blank"
+        rel="noopener noreferrer"
+        title="Open directly in Gmail web"
+        className="text-xs rounded-lg border border-zinc-700 bg-zinc-800 text-zinc-200 px-2.5 py-1 hover:bg-zinc-700 transition-colors"
+      >
+        via Gmail
+      </a>
+    </div>
   );
 }
 

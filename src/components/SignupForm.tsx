@@ -186,10 +186,14 @@ export function SignupForm({ counts, initial }: Props) {
           name="note"
           rows={3}
           value={note}
-          onChange={(e) => setNote(e.target.value)}
+          onChange={(e) => setNote(e.target.value.slice(0, 250))}
           placeholder="Anything we should know?"
+          maxLength={250}
           className="w-full rounded-lg border border-zinc-700 bg-zinc-800 text-zinc-100 placeholder:text-zinc-500 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-zinc-400"
         />
+        <p className="mt-1 text-xs text-zinc-500 text-right tabular-nums">
+          {note.length} / 250
+        </p>
       </div>
 
       <button
