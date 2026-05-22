@@ -345,50 +345,37 @@ export async function sendCancellationEmails(
     .map((id) => CATEGORIES.find((c) => c.id === id)?.name)
     .filter((n): n is string => Boolean(n));
 
-  // 1. Notify the event team contacts. In EMAIL_TEST_MODE the recipient list
-  // is replaced with the volunteer's own email so you can verify the message
-  // without spamming Jordyn / Jake / Arza during testing.
-  const testMode = process.env.EMAIL_TEST_MODE === '1';
-  const contactsTo = testMode
-    ? v.email
-      ? [v.email]
-      : []
-    : EVENT_DETAILS.contacts.map((c) => c.email);
+  // 1. Notify the event team. TEMPORARY: until Resend's sending domain is
+  // verified, this address list is hardcoded to Jake only. Resend's
+  // onboarding@resend.dev sender blocks multi-recipient sends that include
+  // any address other than the account owner. Put Jordyn and Arza back
+  // (and switch to EVENT_DETAILS.contacts.map(c => c.email)) after the
+  // domain is verified — see pre-launch checklist.
+  const contactsTo = ['jaw1124@gmail.com'];
 
-  if (contactsTo.length === 0) {
-    console.log(
-      '[email] No recipients for cancellation notification (test mode + no volunteer email?)',
-    );
-  } else {
-    if (testMode) {
-      console.log(
-        `[email] EMAIL_TEST_MODE=1 — routing contacts notification to ${v.email} instead of Jordyn/Jake/Arza`,
-      );
-    }
-    try {
-      const { error } = await resend.emails.send({
-        from: FROM,
-        to: contactsTo,
-        subject: `Volunteer canceled (${helperFullName}) — Voices of Strength, ${dateNoPrefix}`,
-        html: buildCancellationNotificationHtml({
-          v,
-          helperFullName,
-          arrival,
-          departure,
-          roleNames,
-        }),
-        text: buildCancellationNotificationText({
-          v,
-          helperFullName,
-          arrival,
-          departure,
-          roleNames,
-        }),
-      });
-      if (error) console.error('[email] Resend (contacts) error:', error);
-    } catch (err) {
-      console.error('[email] notification send threw:', err);
-    }
+  try {
+    const { error } = await resend.emails.send({
+      from: FROM,
+      to: contactsTo,
+      subject: `Volunteer canceled (${helperFullName}) — Voices of Strength, ${dateNoPrefix}`,
+      html: buildCancellationNotificationHtml({
+        v,
+        helperFullName,
+        arrival,
+        departure,
+        roleNames,
+      }),
+      text: buildCancellationNotificationText({
+        v,
+        helperFullName,
+        arrival,
+        departure,
+        roleNames,
+      }),
+    });
+    if (error) console.error('[email] Resend (contacts) error:', error);
+  } catch (err) {
+    console.error('[email] notification send threw:', err);
   }
 
   // 2. Send the helper a confirmation receipt.
