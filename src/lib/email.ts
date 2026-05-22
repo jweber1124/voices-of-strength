@@ -276,10 +276,9 @@ ${DARK_MODE_STYLE}
               <p style="margin:0 0 12px 0;">
                 <a href="${e(editUrl)}" class="vos-btn-primary" style="display:inline-block;background-color:#18181b;color:#ffffff;padding:10px 18px;border:2px solid #18181b;border-radius:8px;text-decoration:none;font-weight:500;font-size:14px;">Update my sign-up</a>
               </p>
-              <p style="margin:0 0 16px 0;">
+              <p style="margin:0;">
                 <a href="${e(cancelUrl)}" class="vos-btn-secondary" style="display:inline-block;background-color:transparent;color:#71717a;padding:9px 17px;border:1px solid #d4d4d8;border-radius:8px;text-decoration:none;font-weight:500;font-size:13px;">Cancel my sign-up</a>
               </p>
-              <p style="margin:0;font-size:12px;color:#71717a;word-break:break-all;">Or copy this update URL: ${e(editUrl)}</p>
             </td>
           </tr>
           <tr>
@@ -346,31 +345,50 @@ export async function sendCancellationEmails(
     .map((id) => CATEGORIES.find((c) => c.id === id)?.name)
     .filter((n): n is string => Boolean(n));
 
-  // 1. Notify the event team contacts.
-  try {
-    const contactsTo = EVENT_DETAILS.contacts.map((c) => c.email);
-    const { error } = await resend.emails.send({
-      from: FROM,
-      to: contactsTo,
-      subject: `Volunteer canceled (${helperFullName}) — Voices of Strength, ${dateNoPrefix}`,
-      html: buildCancellationNotificationHtml({
-        v,
-        helperFullName,
-        arrival,
-        departure,
-        roleNames,
-      }),
-      text: buildCancellationNotificationText({
-        v,
-        helperFullName,
-        arrival,
-        departure,
-        roleNames,
-      }),
-    });
-    if (error) console.error('[email] Resend (contacts) error:', error);
-  } catch (err) {
-    console.error('[email] notification send threw:', err);
+  // 1. Notify the event team contacts. In EMAIL_TEST_MODE the recipient list
+  // is replaced with the volunteer's own email so you can verify the message
+  // without spamming Jordyn / Jake / Arza during testing.
+  const testMode = process.env.EMAIL_TEST_MODE === '1';
+  const contactsTo = testMode
+    ? v.email
+      ? [v.email]
+      : []
+    : EVENT_DETAILS.contacts.map((c) => c.email);
+
+  if (contactsTo.length === 0) {
+    console.log(
+      '[email] No recipients for cancellation notification (test mode + no volunteer email?)',
+    );
+  } else {
+    if (testMode) {
+      console.log(
+        `[email] EMAIL_TEST_MODE=1 — routing contacts notification to ${v.email} instead of Jordyn/Jake/Arza`,
+      );
+    }
+    try {
+      const { error } = await resend.emails.send({
+        from: FROM,
+        to: contactsTo,
+        subject: `Volunteer canceled (${helperFullName}) — Voices of Strength, ${dateNoPrefix}`,
+        html: buildCancellationNotificationHtml({
+          v,
+          helperFullName,
+          arrival,
+          departure,
+          roleNames,
+        }),
+        text: buildCancellationNotificationText({
+          v,
+          helperFullName,
+          arrival,
+          departure,
+          roleNames,
+        }),
+      });
+      if (error) console.error('[email] Resend (contacts) error:', error);
+    } catch (err) {
+      console.error('[email] notification send threw:', err);
+    }
   }
 
   // 2. Send the helper a confirmation receipt.
