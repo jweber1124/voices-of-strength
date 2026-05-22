@@ -32,6 +32,17 @@ export default async function ThankYou({ searchParams }: Props) {
             Register another helper
           </Link>
         </div>
+        {volunteerId && (
+          <p className="mt-6 text-xs text-zinc-500">
+            Can&apos;t make it?{' '}
+            <Link
+              href={`/helper/cancel?volunteerId=${volunteerId}`}
+              className="underline underline-offset-2 hover:text-zinc-300"
+            >
+              Cancel my sign-up
+            </Link>
+          </p>
+        )}
       </div>
     </main>
   );
