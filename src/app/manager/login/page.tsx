@@ -14,7 +14,7 @@ export default async function ManagerLoginPage({ searchParams }: Props) {
         <div className="mb-4">
           <Link
             href="/"
-            className="text-sm text-zinc-400 hover:text-zinc-100 transition-colors"
+            className="inline-block text-sm text-zinc-400 hover:text-zinc-100 active:text-zinc-100 active:scale-95 transition-all"
           >
             ← Volunteer Portal
           </Link>
@@ -48,7 +48,7 @@ export default async function ManagerLoginPage({ searchParams }: Props) {
 
           <button
             type="submit"
-            className="w-full rounded-lg bg-zinc-100 text-zinc-900 font-medium py-2.5 hover:bg-white transition-colors"
+            className="w-full rounded-lg bg-zinc-100 text-zinc-900 font-medium py-2.5 hover:bg-white active:bg-zinc-300 active:scale-[0.98] transition-all"
           >
             Sign in
           </button>

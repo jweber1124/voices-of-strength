@@ -29,7 +29,7 @@ export function ExtendSessionButton() {
       onClick={handleClick}
       disabled={pending}
       title="Extend your session to 8 hours from now"
-      className="text-sm rounded-full border border-zinc-600 bg-zinc-900 text-zinc-100 px-3.5 py-1.5 font-medium hover:bg-zinc-800 hover:border-zinc-500 transition-colors disabled:opacity-50 shrink-0"
+      className="text-sm rounded-full border border-zinc-600 bg-zinc-900 text-zinc-100 px-3.5 py-1.5 font-medium hover:bg-zinc-800 hover:border-zinc-500 active:scale-95 transition-all disabled:opacity-50 shrink-0"
     >
       {pending ? 'Extending…' : 'Stay logged in 8h'}
     </button>

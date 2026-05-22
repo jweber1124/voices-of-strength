@@ -32,7 +32,7 @@ export function ConfirmAssignmentButton({
         type="button"
         onClick={handleClick}
         disabled={pending}
-        className="mt-2 rounded-md bg-red-500/30 hover:bg-red-500/40 text-red-50 px-2.5 py-1 text-xs font-medium disabled:opacity-50 transition-colors"
+        className="mt-2 rounded-md bg-red-500/30 hover:bg-red-500/40 text-red-50 px-2.5 py-1 text-xs font-medium disabled:opacity-50 active:scale-95 transition-all"
       >
         {pending ? 'Confirming…' : 'Confirmed with helper'}
       </button>

@@ -57,7 +57,7 @@ export default async function HelperPage({ searchParams }: PageProps) {
         <div className="mb-4">
           <Link
             href="/"
-            className="text-sm text-zinc-400 hover:text-zinc-100 transition-colors"
+            className="inline-block text-sm text-zinc-400 hover:text-zinc-100 active:text-zinc-100 active:scale-95 transition-all"
           >
             ← Volunteer Portal
           </Link>

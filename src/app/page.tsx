@@ -19,16 +19,16 @@ export default function LandingPage() {
 
         <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3">
           <Link
-            href="/manager"
-            className="rounded-lg border border-zinc-700 px-5 py-3 font-medium hover:bg-zinc-900 transition-colors"
-          >
-            Manage
-          </Link>
-          <Link
             href="/helper"
-            className="rounded-lg bg-zinc-100 text-zinc-900 px-5 py-3 font-medium hover:bg-white transition-colors"
+            className="rounded-lg bg-zinc-100 text-zinc-900 px-5 py-3 font-medium hover:bg-white active:bg-zinc-300 active:scale-95 transition-all"
           >
             Help
+          </Link>
+          <Link
+            href="/manager"
+            className="rounded-lg border border-zinc-700 px-5 py-3 font-medium hover:bg-zinc-900 active:bg-zinc-800 active:scale-95 transition-all"
+          >
+            Manage
           </Link>
         </div>
       </div>

@@ -61,5 +61,9 @@ export const EVENT_DETAILS: EventDetails = {
       phone: '(512) 952-0755',
     },
   ],
-  ccEmails: ['jaw1124@gmail.com', 'arza.demi@cforr.org'],
+  ccEmails: [
+    'jaw1124@gmail.com',
+    'jbenson@driftwoodrecovery.com',
+    'arza.demi@cforr.org',
+  ],
 };

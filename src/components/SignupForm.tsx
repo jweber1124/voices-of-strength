@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { submitSignup } from '@/lib/actions';
 import { CATEGORIES } from '@/lib/categories';
+import { Checkbox } from '@/components/Checkbox';
 
 type Initial = {
   id?: string;
@@ -148,19 +149,18 @@ export function SignupForm({ counts, initial }: Props) {
             return (
               <label
                 key={cat.id}
-                className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
+                className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-colors active:bg-zinc-800 ${
                   checked
                     ? 'border-zinc-500 bg-zinc-800'
                     : 'border-zinc-800 hover:bg-zinc-800/50'
                 }`}
               >
-                <input
-                  type="checkbox"
+                <Checkbox
                   name="categories"
                   value={cat.id}
                   checked={checked}
                   onChange={() => toggleCategory(cat.id)}
-                  className="mt-1 h-4 w-4 accent-zinc-100"
+                  className="mt-0.5"
                 />
                 <div className="flex-1">
                   <div className="flex items-baseline justify-between gap-2">
@@ -198,7 +198,7 @@ export function SignupForm({ counts, initial }: Props) {
 
       <button
         type="submit"
-        className="w-full rounded-lg bg-zinc-100 text-zinc-900 font-medium py-3 hover:bg-white transition-colors"
+        className="w-full rounded-lg bg-zinc-100 text-zinc-900 font-medium py-3 hover:bg-white transition-all active:scale-[0.98]"
       >
         {isEdit ? 'Update sign-up' : 'Submit sign-up'}
       </button>
@@ -274,7 +274,7 @@ function TimeField({
             type="button"
             onClick={() => onChange(adjustTime(value, -15))}
             aria-label="Back 15 minutes"
-            className="px-2 text-xs rounded border border-zinc-700 bg-zinc-800 text-zinc-300 hover:bg-zinc-700 leading-none py-1"
+            className="px-2 text-xs rounded border border-zinc-700 bg-zinc-800 text-zinc-300 hover:bg-zinc-700 active:scale-90 transition-all leading-none py-1"
           >
             −15
           </button>
@@ -282,7 +282,7 @@ function TimeField({
             type="button"
             onClick={() => onChange(adjustTime(value, 15))}
             aria-label="Forward 15 minutes"
-            className="px-2 text-xs rounded border border-zinc-700 bg-zinc-800 text-zinc-300 hover:bg-zinc-700 leading-none py-1"
+            className="px-2 text-xs rounded border border-zinc-700 bg-zinc-800 text-zinc-300 hover:bg-zinc-700 active:scale-90 transition-all leading-none py-1"
           >
             +15
           </button>

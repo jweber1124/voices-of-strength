@@ -28,7 +28,7 @@ export function QRButton({ url, label, buttonText = 'QR' }: Props) {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="text-sm rounded-lg border border-zinc-700 bg-zinc-800 text-zinc-200 px-3 py-1.5 hover:bg-zinc-700 transition-colors"
+        className="text-sm rounded-lg border border-zinc-700 bg-zinc-800 text-zinc-200 px-3 py-1.5 hover:bg-zinc-700 active:bg-zinc-700 active:scale-95 transition-all"
       >
         {buttonText}
       </button>
@@ -57,7 +57,7 @@ export function QRButton({ url, label, buttonText = 'QR' }: Props) {
             <button
               type="button"
               onClick={() => setOpen(false)}
-              className="mt-5 rounded-lg bg-zinc-900 text-white px-5 py-2 text-sm font-medium hover:bg-zinc-800 transition-colors"
+              className="mt-5 rounded-lg bg-zinc-900 text-white px-5 py-2 text-sm font-medium hover:bg-zinc-800 active:bg-zinc-700 active:scale-95 transition-all"
             >
               Close
             </button>

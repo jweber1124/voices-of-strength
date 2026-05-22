@@ -125,7 +125,7 @@ export default async function ManagerHome() {
                     href={EVENT_DETAILS.urls.performerSignup}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-sm rounded-lg border border-zinc-700 bg-zinc-800 text-zinc-200 px-3 py-1.5 hover:bg-zinc-700 transition-colors"
+                    className="text-sm rounded-lg border border-zinc-700 bg-zinc-800 text-zinc-200 px-3 py-1.5 hover:bg-zinc-700 active:bg-zinc-700 active:scale-95 transition-all"
                   >
                     Open form
                   </a>
@@ -140,7 +140,7 @@ export default async function ManagerHome() {
                     href={EVENT_DETAILS.urls.eventbrite}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-sm rounded-lg border border-zinc-700 bg-zinc-800 text-zinc-200 px-3 py-1.5 hover:bg-zinc-700 transition-colors"
+                    className="text-sm rounded-lg border border-zinc-700 bg-zinc-800 text-zinc-200 px-3 py-1.5 hover:bg-zinc-700 active:bg-zinc-700 active:scale-95 transition-all"
                   >
                     Open page
                   </a>
@@ -216,7 +216,7 @@ function EmailAllHelpersLink({ volunteers }: { volunteers: Volunteer[] }) {
       <a
         href={mailtoHref}
         title="Open in your default mail app"
-        className="text-xs rounded-lg border border-zinc-700 bg-zinc-800 text-zinc-200 px-2.5 py-1 hover:bg-zinc-700 transition-colors"
+        className="text-xs rounded-lg border border-zinc-700 bg-zinc-800 text-zinc-200 px-2.5 py-1 hover:bg-zinc-700 active:bg-zinc-700 active:scale-95 transition-all"
       >
         Email all
       </a>
@@ -225,7 +225,7 @@ function EmailAllHelpersLink({ volunteers }: { volunteers: Volunteer[] }) {
         target="_blank"
         rel="noopener noreferrer"
         title="Open directly in Gmail web"
-        className="text-xs rounded-lg border border-zinc-700 bg-zinc-800 text-zinc-200 px-2.5 py-1 hover:bg-zinc-700 transition-colors"
+        className="text-xs rounded-lg border border-zinc-700 bg-zinc-800 text-zinc-200 px-2.5 py-1 hover:bg-zinc-700 active:bg-zinc-700 active:scale-95 transition-all"
       >
         via Gmail
       </a>
@@ -255,14 +255,14 @@ function Header({
         <ExtendSessionButton />
         <Link
           href="/"
-          className="text-sm text-zinc-400 hover:text-zinc-100 transition-colors"
+          className="text-sm text-zinc-400 hover:text-zinc-100 active:text-zinc-100 active:scale-95 transition-all"
         >
           ← Portal
         </Link>
         <form action={logout}>
           <button
             type="submit"
-            className="text-sm text-zinc-400 hover:text-zinc-100 transition-colors"
+            className="text-sm text-zinc-400 hover:text-zinc-100 active:text-zinc-100 active:scale-95 transition-all"
           >
             Sign out
           </button>

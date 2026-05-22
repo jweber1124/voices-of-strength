@@ -20,14 +20,14 @@ export default async function ThankYou({ searchParams }: Props) {
           {volunteerId && (
             <Link
               href={`/helper?volunteerId=${volunteerId}`}
-              className="rounded-lg border border-zinc-700 px-4 py-2 text-sm text-zinc-100 hover:bg-zinc-800 transition-colors"
+              className="rounded-lg border border-zinc-700 px-4 py-2 text-sm text-zinc-100 hover:bg-zinc-800 active:bg-zinc-700 active:scale-95 transition-all"
             >
               Edit sign-up
             </Link>
           )}
           <Link
             href="/helper"
-            className="rounded-lg bg-zinc-100 text-zinc-900 px-4 py-2 text-sm font-medium hover:bg-white transition-colors"
+            className="rounded-lg bg-zinc-100 text-zinc-900 px-4 py-2 text-sm font-medium hover:bg-white active:bg-zinc-300 active:scale-95 transition-all"
           >
             Register another helper
           </Link>

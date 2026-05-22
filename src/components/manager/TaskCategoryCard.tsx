@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react';
 import type { TaskCategory, SubTask } from '@/lib/task-categories';
 import { toggleSubTask, toggleCategoryAssignment } from '@/lib/manager-actions';
 import { needsConfirmation } from '@/lib/category-rules';
+import { Checkbox } from '@/components/Checkbox';
 
 type VolunteerSummary = {
   id: string;
@@ -98,7 +99,7 @@ export function TaskCategoryCard({
                           ? `${v.first_name} ${v.last_name} — availability not confirmed`
                           : 'Show helper card'
                       }
-                      className={`text-xs rounded-full px-2.5 py-1 font-medium transition-colors ${pillClass}`}
+                      className={`text-xs rounded-full px-2.5 py-1 font-medium transition-all active:scale-95 ${pillClass}`}
                     >
                       {v.first_name} {v.last_name}
                     </button>
@@ -108,7 +109,7 @@ export function TaskCategoryCard({
               <button
                 type="button"
                 onClick={() => setOpen(!open)}
-                className="text-xs rounded-full border border-zinc-700 text-zinc-300 px-2.5 py-1 hover:bg-zinc-800 transition-colors"
+                className="text-xs rounded-full border border-zinc-700 text-zinc-300 px-2.5 py-1 hover:bg-zinc-800 active:scale-95 transition-all"
               >
                 {open ? 'Close' : 'Manage'}
               </button>
@@ -136,12 +137,11 @@ export function TaskCategoryCard({
                             : `${v.first_name} did not sign up for this role — assigning will flag for confirmation`
                         }
                       >
-                        <input
-                          type="checkbox"
+                        <Checkbox
                           checked={isAssigned}
                           onChange={() => handleAssignmentToggle(v.id, isAssigned)}
                           disabled={pending}
-                          className="h-4 w-4 accent-zinc-100"
+                          size="sm"
                         />
                         <span>
                           {v.first_name} {v.last_name}
@@ -199,13 +199,12 @@ function SubTaskRow({
 }) {
   return (
     <li>
-      <label className="flex items-start gap-3 px-4 py-3 cursor-pointer hover:bg-zinc-800/40 transition-colors">
-        <input
-          type="checkbox"
+      <label className="flex items-start gap-3 px-4 py-3 cursor-pointer hover:bg-zinc-800/40 active:bg-zinc-800/70 transition-colors">
+        <Checkbox
           checked={checked}
           onChange={onToggle}
           disabled={disabled}
-          className="mt-0.5 h-4 w-4 accent-zinc-100 shrink-0"
+          className="mt-0.5"
         />
         <span
           className={`text-sm ${
