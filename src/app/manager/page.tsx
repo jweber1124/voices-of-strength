@@ -4,6 +4,7 @@ import { TASK_CATEGORIES } from '@/lib/task-categories';
 import { HelperCard, type Volunteer } from '@/components/manager/HelperCard';
 import { TaskCategoryCard } from '@/components/manager/TaskCategoryCard';
 import { HelperFocusProvider } from '@/components/manager/HelperFocusContext';
+import { HelperDetailSheet } from '@/components/manager/HelperDetailSheet';
 import { logout } from '@/lib/manager-auth';
 import { ExtendSessionButton } from '@/components/manager/ExtendSessionButton';
 import { QRButton } from '@/components/manager/QRButton';
@@ -153,6 +154,10 @@ export default async function ManagerHome() {
         </div>
 
         <HelperFocusProvider>
+        <HelperDetailSheet
+          helpers={volunteers}
+          assignmentsByVolunteer={assignmentsByVolunteer}
+        />
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-4 order-2 lg:order-1 min-w-0">
             {TASK_CATEGORIES.map((category) => (

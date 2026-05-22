@@ -1,9 +1,7 @@
 'use client';
 
-import { AnimatePresence, motion } from 'motion/react';
 import { TASK_CATEGORIES } from '@/lib/task-categories';
 import { needsConfirmation } from '@/lib/category-rules';
-import { ConfirmAssignmentButton } from './ConfirmAssignmentButton';
 import { useHelperFocus } from './HelperFocusContext';
 
 export type Volunteer = {
@@ -32,17 +30,10 @@ function formatTime(t: string | null): string {
   return `${h12}:${mm.toString().padStart(2, '0')} ${period}`;
 }
 
-function formatCell(cell: string): string {
-  const digits = cell.replace(/\D/g, '');
-  if (digits.length === 10) {
-    return `${digits.slice(0, 3)}-${digits.slice(3, 6)}-${digits.slice(6, 10)}`;
-  }
-  return cell;
-}
-
+// Compact summary card. Tap anywhere on it → opens the detail sheet via the
+// shared HelperFocus context. Tasks list never scrolls.
 export function HelperCard({ volunteer, assignedCategoryIds }: Props) {
-  const { expandedIds, toggle } = useHelperFocus();
-  const isOpen = expandedIds.has(volunteer.id);
+  const { setFocused } = useHelperFocus();
 
   const name = `${volunteer.first_name} ${volunteer.last_name}`;
   const time =
@@ -51,129 +42,57 @@ export function HelperCard({ volunteer, assignedCategoryIds }: Props) {
       : null;
 
   const hasGeneral = volunteer.categories.includes('general');
-  const taskCatLookup = new Map(TASK_CATEGORIES.map((c) => [c.id, c]));
-
   const specificPrefs = volunteer.categories.filter((c) => c !== 'general');
   const rolesUnion = new Set<string>([...specificPrefs, ...assignedCategoryIds]);
   const orderedRoles = TASK_CATEGORIES.filter((c) => rolesUnion.has(c.id));
 
-  const unconfirmed = assignedCategoryIds.filter((catId) =>
-    needsConfirmation(catId, volunteer.categories),
-  );
-
   return (
-    <div
+    <button
+      type="button"
+      onClick={() => setFocused(volunteer.id)}
       id={`helper-${volunteer.id}`}
-      className="rounded-lg border border-zinc-800 bg-zinc-900 transition-shadow scroll-mt-6"
+      className="w-full text-left rounded-lg border border-zinc-800 bg-zinc-900 p-4 hover:border-zinc-700 active:bg-zinc-800/60 active:scale-[0.99] transition-all"
     >
-      <button
-        type="button"
-        onClick={() => toggle(volunteer.id)}
-        className="w-full text-left p-4 active:bg-zinc-800/50 transition-colors"
-        aria-expanded={isOpen}
-      >
-        <div className="flex items-baseline justify-between gap-2">
-          <div className="font-medium">{name}</div>
-          {time && (
-            <div className="text-xs text-zinc-500 shrink-0 tabular-nums">
-              {time}
-            </div>
-          )}
+      <div className="flex items-baseline justify-between gap-2">
+        <div className="font-medium">{name}</div>
+        {time && (
+          <div className="text-xs text-zinc-500 shrink-0 tabular-nums">
+            {time}
+          </div>
+        )}
+      </div>
+
+      {hasGeneral && (
+        <div className="mt-2">
+          <span className="text-xs rounded-full bg-amber-500/15 border border-amber-500/40 text-amber-200 px-2 py-0.5">
+            General event support
+          </span>
         </div>
+      )}
 
-        {hasGeneral && (
-          <div className="mt-2">
-            <span
-              className="text-xs rounded-full bg-amber-500/15 border border-amber-500/40 text-amber-200 px-2 py-0.5"
-              title="Flexible — available for any in-event role"
-            >
-              General event support
-            </span>
-          </div>
-        )}
-
-        {orderedRoles.length > 0 && (
-          <div className="mt-2 flex flex-wrap gap-1.5">
-            {orderedRoles.map((cat) => {
-              const isAssigned = assignedCategoryIds.includes(cat.id);
-              const isUnconfirmed =
-                isAssigned && needsConfirmation(cat.id, volunteer.categories);
-              let pillClass = 'text-xs rounded-full px-2 py-0.5 ';
-              let pillTitle: string;
-              if (isUnconfirmed) {
-                pillClass +=
-                  'bg-red-500/15 border border-red-500/40 text-red-200';
-                pillTitle = 'Assigned but availability not confirmed';
-              } else if (isAssigned) {
-                pillClass +=
-                  'bg-emerald-500/20 border border-emerald-500/50 text-emerald-100 font-medium';
-                pillTitle = 'Assigned';
-              } else {
-                pillClass +=
-                  'bg-zinc-800 border border-zinc-700 text-zinc-300';
-                pillTitle = 'Signed up but not yet assigned';
-              }
-              return (
-                <span key={cat.id} className={pillClass} title={pillTitle}>
-                  {cat.name}
-                </span>
-              );
-            })}
-          </div>
-        )}
-      </button>
-
-      <AnimatePresence initial={false}>
-        {isOpen && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.2, ease: 'easeOut' }}
-            style={{ overflow: 'hidden' }}
-          >
-            <div className="px-4 pb-4 -mt-1">
-              <div className="flex flex-col gap-1 text-sm">
-                {volunteer.cell && (
-                  <a
-                    href={`tel:${volunteer.cell.replace(/\D/g, '')}`}
-                    className="text-zinc-300 hover:text-zinc-100 underline-offset-2 hover:underline tabular-nums w-fit"
-                  >
-                    {formatCell(volunteer.cell)}
-                  </a>
-                )}
-                {volunteer.email && (
-                  <a
-                    href={`mailto:${volunteer.email}?subject=${encodeURIComponent('Voices of Strength Open Mic')}`}
-                    className="text-zinc-300 hover:text-zinc-100 underline-offset-2 hover:underline truncate w-fit"
-                  >
-                    {volunteer.email}
-                  </a>
-                )}
-              </div>
-
-              {unconfirmed.map((catId) => {
-                const cat = taskCatLookup.get(catId);
-                if (!cat) return null;
-                return (
-                  <ConfirmAssignmentButton
-                    key={catId}
-                    volunteerId={volunteer.id}
-                    categoryId={catId}
-                    categoryName={cat.name}
-                  />
-                );
-              })}
-
-              {volunteer.note && (
-                <div className="mt-3 text-xs text-zinc-400 italic border-l-2 border-zinc-700 pl-2 break-words">
-                  {volunteer.note}
-                </div>
-              )}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
+      {orderedRoles.length > 0 && (
+        <div className="mt-2 flex flex-wrap gap-1.5">
+          {orderedRoles.map((cat) => {
+            const isAssigned = assignedCategoryIds.includes(cat.id);
+            const isUnconfirmed =
+              isAssigned && needsConfirmation(cat.id, volunteer.categories);
+            let pillClass = 'text-xs rounded-full px-2 py-0.5 ';
+            if (isUnconfirmed) {
+              pillClass += 'bg-red-500/15 border border-red-500/40 text-red-200';
+            } else if (isAssigned) {
+              pillClass +=
+                'bg-emerald-500/20 border border-emerald-500/50 text-emerald-100 font-medium';
+            } else {
+              pillClass += 'bg-zinc-800 border border-zinc-700 text-zinc-300';
+            }
+            return (
+              <span key={cat.id} className={pillClass}>
+                {cat.name}
+              </span>
+            );
+          })}
+        </div>
+      )}
+    </button>
   );
 }

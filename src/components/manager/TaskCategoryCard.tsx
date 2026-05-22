@@ -23,23 +23,6 @@ type Props = {
   allVolunteers: VolunteerSummary[];
 };
 
-function focusHelper(
-  volunteerId: string,
-  expand: (id: string) => void,
-) {
-  expand(volunteerId);
-  // Let the card mount/expand before scrolling.
-  window.setTimeout(() => {
-    const el = document.getElementById(`helper-${volunteerId}`);
-    if (!el) return;
-    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    el.classList.add('ring-2', 'ring-zinc-300');
-    window.setTimeout(() => {
-      el.classList.remove('ring-2', 'ring-zinc-300');
-    }, 1500);
-  }, 80);
-}
-
 export function TaskCategoryCard({
   eventId,
   category,
@@ -49,7 +32,7 @@ export function TaskCategoryCard({
 }: Props) {
   const [open, setOpen] = useState(false);
   const [, startTransition] = useTransition();
-  const { expand } = useHelperFocus();
+  const { setFocused } = useHelperFocus();
 
   // Optimistic state for instant tap feedback. The actual server-truth comes
   // back via revalidatePath; useOptimistic resets back to it on reconcile.
@@ -137,11 +120,11 @@ export function TaskCategoryCard({
                     <button
                       key={v.id}
                       type="button"
-                      onClick={() => focusHelper(v.id, expand)}
+                      onClick={() => setFocused(v.id)}
                       title={
                         isUnconfirmed
                           ? `${v.first_name} ${v.last_name} — availability not confirmed`
-                          : 'Show helper card'
+                          : 'Show helper details'
                       }
                       className={`text-xs rounded-full px-2.5 py-1 font-medium transition-all active:scale-95 ${pillClass}`}
                     >
