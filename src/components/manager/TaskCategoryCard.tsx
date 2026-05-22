@@ -1,10 +1,12 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useState, useTransition, useOptimistic } from 'react';
+import { motion } from 'motion/react';
 import type { TaskCategory, SubTask } from '@/lib/task-categories';
 import { toggleSubTask, toggleCategoryAssignment } from '@/lib/manager-actions';
 import { needsConfirmation } from '@/lib/category-rules';
 import { Checkbox } from '@/components/Checkbox';
+import { useHelperFocus } from './HelperFocusContext';
 
 type VolunteerSummary = {
   id: string;
@@ -21,14 +23,21 @@ type Props = {
   allVolunteers: VolunteerSummary[];
 };
 
-function scrollToHelper(volunteerId: string) {
-  const el = document.getElementById(`helper-${volunteerId}`);
-  if (!el) return;
-  el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  el.classList.add('ring-2', 'ring-zinc-300');
+function focusHelper(
+  volunteerId: string,
+  expand: (id: string) => void,
+) {
+  expand(volunteerId);
+  // Let the card mount/expand before scrolling.
   window.setTimeout(() => {
-    el.classList.remove('ring-2', 'ring-zinc-300');
-  }, 1500);
+    const el = document.getElementById(`helper-${volunteerId}`);
+    if (!el) return;
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    el.classList.add('ring-2', 'ring-zinc-300');
+    window.setTimeout(() => {
+      el.classList.remove('ring-2', 'ring-zinc-300');
+    }, 1500);
+  }, 80);
 }
 
 export function TaskCategoryCard({
@@ -39,22 +48,43 @@ export function TaskCategoryCard({
   allVolunteers,
 }: Props) {
   const [open, setOpen] = useState(false);
-  const [pending, startTransition] = useTransition();
+  const [, startTransition] = useTransition();
+  const { expand } = useHelperFocus();
 
-  const completedSet = new Set(completedSubTaskIds);
-  const assignedSet = new Set(assignedVolunteerIds);
+  // Optimistic state for instant tap feedback. The actual server-truth comes
+  // back via revalidatePath; useOptimistic resets back to it on reconcile.
+  const [optimisticCompleted, applyCompletion] = useOptimistic<string[], string>(
+    completedSubTaskIds,
+    (state, taskId) =>
+      state.includes(taskId)
+        ? state.filter((id) => id !== taskId)
+        : [...state, taskId],
+  );
 
-  const incomplete = category.subTasks.filter((t) => !completedSet.has(t.id));
-  const completed = category.subTasks.filter((t) => completedSet.has(t.id));
+  const [optimisticAssigned, applyAssignment] = useOptimistic<string[], string>(
+    assignedVolunteerIds,
+    (state, volunteerId) =>
+      state.includes(volunteerId)
+        ? state.filter((id) => id !== volunteerId)
+        : [...state, volunteerId],
+  );
+
+  const completedSet = new Set(optimisticCompleted);
+  const assignedSet = new Set(optimisticAssigned);
 
   function handleSubTaskToggle(subTaskId: string, currentChecked: boolean) {
     startTransition(async () => {
+      applyCompletion(subTaskId);
       await toggleSubTask(eventId, subTaskId, !currentChecked);
     });
   }
 
-  function handleAssignmentToggle(volunteerId: string, currentlyAssigned: boolean) {
+  function handleAssignmentToggle(
+    volunteerId: string,
+    currentlyAssigned: boolean,
+  ) {
     startTransition(async () => {
+      applyAssignment(volunteerId);
       await toggleCategoryAssignment(
         eventId,
         category.id,
@@ -66,13 +96,24 @@ export function TaskCategoryCard({
 
   const assignedVolunteers = allVolunteers.filter((v) => assignedSet.has(v.id));
 
+  // Sub-tasks sorted with incomplete first, completed at bottom. Motion's
+  // layout prop animates the position change smoothly.
+  const sortedSubTasks = [
+    ...category.subTasks.filter((t) => !completedSet.has(t.id)),
+    ...category.subTasks.filter((t) => completedSet.has(t.id)),
+  ];
+
+  const completedCount = category.subTasks.filter((t) =>
+    completedSet.has(t.id),
+  ).length;
+
   return (
     <div className="rounded-xl border border-zinc-800 bg-zinc-900 overflow-hidden">
       <div className="p-4 border-b border-zinc-800">
         <div className="flex items-baseline justify-between gap-2">
           <h3 className="text-lg font-semibold">{category.name}</h3>
           <span className="text-xs text-zinc-500 shrink-0 tabular-nums">
-            {completed.length} / {category.subTasks.length} done
+            {completedCount} / {category.subTasks.length} done
           </span>
         </div>
 
@@ -85,7 +126,10 @@ export function TaskCategoryCard({
                 </span>
               ) : (
                 assignedVolunteers.map((v) => {
-                  const isUnconfirmed = needsConfirmation(category.id, v.categories);
+                  const isUnconfirmed = needsConfirmation(
+                    category.id,
+                    v.categories,
+                  );
                   const pillClass = isUnconfirmed
                     ? 'bg-red-500/15 border border-red-500/40 text-red-100 hover:bg-red-500/25'
                     : 'bg-zinc-100 text-zinc-900 hover:bg-white';
@@ -93,7 +137,7 @@ export function TaskCategoryCard({
                     <button
                       key={v.id}
                       type="button"
-                      onClick={() => scrollToHelper(v.id)}
+                      onClick={() => focusHelper(v.id, expand)}
                       title={
                         isUnconfirmed
                           ? `${v.first_name} ${v.last_name} — availability not confirmed`
@@ -124,7 +168,10 @@ export function TaskCategoryCard({
                 ) : (
                   allVolunteers.map((v) => {
                     const isAssigned = assignedSet.has(v.id);
-                    const isPreferredFit = !needsConfirmation(category.id, v.categories);
+                    const isPreferredFit = !needsConfirmation(
+                      category.id,
+                      v.categories,
+                    );
                     return (
                       <label
                         key={v.id}
@@ -139,8 +186,9 @@ export function TaskCategoryCard({
                       >
                         <Checkbox
                           checked={isAssigned}
-                          onChange={() => handleAssignmentToggle(v.id, isAssigned)}
-                          disabled={pending}
+                          onChange={() =>
+                            handleAssignmentToggle(v.id, isAssigned)
+                          }
                           size="sm"
                         />
                         <span>
@@ -157,63 +205,36 @@ export function TaskCategoryCard({
       </div>
 
       <ul className="divide-y divide-zinc-800">
-        {incomplete.map((task) => (
-          <SubTaskRow
-            key={task.id}
-            task={task}
-            checked={false}
-            disabled={pending}
-            onToggle={() => handleSubTaskToggle(task.id, false)}
-          />
-        ))}
-        {completed.length > 0 && (
-          <li className="bg-zinc-950/50">
-            <ul className="divide-y divide-zinc-800/60">
-              {completed.map((task) => (
-                <SubTaskRow
-                  key={task.id}
-                  task={task}
-                  checked={true}
-                  disabled={pending}
-                  onToggle={() => handleSubTaskToggle(task.id, true)}
+        {sortedSubTasks.map((task) => {
+          const checked = completedSet.has(task.id);
+          return (
+            <motion.li
+              key={task.id}
+              layout
+              transition={{ duration: 0.25, ease: 'easeOut' }}
+              className={checked ? 'bg-zinc-950/50' : ''}
+            >
+              <label className="flex items-start gap-3 px-4 py-3 cursor-pointer hover:bg-zinc-800/40 active:bg-zinc-800/70 transition-colors">
+                <Checkbox
+                  checked={checked}
+                  onChange={() => handleSubTaskToggle(task.id, checked)}
+                  className="mt-0.5"
                 />
-              ))}
-            </ul>
-          </li>
-        )}
+                <span
+                  className={`text-sm ${
+                    checked ? 'line-through text-zinc-500' : 'text-zinc-200'
+                  }`}
+                >
+                  {task.title}
+                </span>
+              </label>
+            </motion.li>
+          );
+        })}
       </ul>
     </div>
   );
 }
 
-function SubTaskRow({
-  task,
-  checked,
-  disabled,
-  onToggle,
-}: {
-  task: SubTask;
-  checked: boolean;
-  disabled: boolean;
-  onToggle: () => void;
-}) {
-  return (
-    <li>
-      <label className="flex items-start gap-3 px-4 py-3 cursor-pointer hover:bg-zinc-800/40 active:bg-zinc-800/70 transition-colors">
-        <Checkbox
-          checked={checked}
-          onChange={onToggle}
-          disabled={disabled}
-          className="mt-0.5"
-        />
-        <span
-          className={`text-sm ${
-            checked ? 'line-through text-zinc-500' : 'text-zinc-200'
-          }`}
-        >
-          {task.title}
-        </span>
-      </label>
-    </li>
-  );
-}
+// Note: SubTask type re-imported just for the layout above; not used elsewhere.
+export type { SubTask };

@@ -3,6 +3,7 @@ import { supabaseAdmin } from '@/lib/supabase-admin';
 import { TASK_CATEGORIES } from '@/lib/task-categories';
 import { HelperCard, type Volunteer } from '@/components/manager/HelperCard';
 import { TaskCategoryCard } from '@/components/manager/TaskCategoryCard';
+import { HelperFocusProvider } from '@/components/manager/HelperFocusContext';
 import { logout } from '@/lib/manager-auth';
 import { ExtendSessionButton } from '@/components/manager/ExtendSessionButton';
 import { QRButton } from '@/components/manager/QRButton';
@@ -151,6 +152,7 @@ export default async function ManagerHome() {
           </div>
         </div>
 
+        <HelperFocusProvider>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-4 order-2 lg:order-1 min-w-0">
             {TASK_CATEGORIES.map((category) => (
@@ -189,6 +191,7 @@ export default async function ManagerHome() {
             )}
           </aside>
         </div>
+        </HelperFocusProvider>
       </div>
     </main>
   );
@@ -241,7 +244,7 @@ function Header({
   volunteerCount: number;
 }) {
   return (
-    <header className="mb-8 flex items-start justify-between gap-4">
+    <header className="mb-8 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-4">
       <div>
         <h1 className="text-3xl font-semibold tracking-tight">
           Manager dashboard
@@ -251,7 +254,7 @@ function Header({
           {volunteerCount === 1 ? 'helper' : 'helpers'} signed up
         </p>
       </div>
-      <div className="flex items-center gap-4 shrink-0">
+      <div className="flex items-center gap-4 flex-wrap sm:flex-nowrap sm:shrink-0">
         <ExtendSessionButton />
         <Link
           href="/"

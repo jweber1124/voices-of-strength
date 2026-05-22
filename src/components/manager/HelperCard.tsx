@@ -1,6 +1,10 @@
+'use client';
+
+import { AnimatePresence, motion } from 'motion/react';
 import { TASK_CATEGORIES } from '@/lib/task-categories';
 import { needsConfirmation } from '@/lib/category-rules';
 import { ConfirmAssignmentButton } from './ConfirmAssignmentButton';
+import { useHelperFocus } from './HelperFocusContext';
 
 export type Volunteer = {
   id: string;
@@ -37,6 +41,9 @@ function formatCell(cell: string): string {
 }
 
 export function HelperCard({ volunteer, assignedCategoryIds }: Props) {
+  const { expandedIds, toggle } = useHelperFocus();
+  const isOpen = expandedIds.has(volunteer.id);
+
   const name = `${volunteer.first_name} ${volunteer.last_name}`;
   const time =
     volunteer.arrival_time && volunteer.departure_time
@@ -46,8 +53,6 @@ export function HelperCard({ volunteer, assignedCategoryIds }: Props) {
   const hasGeneral = volunteer.categories.includes('general');
   const taskCatLookup = new Map(TASK_CATEGORIES.map((c) => [c.id, c]));
 
-  // Union of specific preferences (excluding general) and current assignments,
-  // ordered by the canonical task-category order.
   const specificPrefs = volunteer.categories.filter((c) => c !== 'general');
   const rolesUnion = new Set<string>([...specificPrefs, ...assignedCategoryIds]);
   const orderedRoles = TASK_CATEGORIES.filter((c) => rolesUnion.has(c.id));
@@ -59,58 +64,42 @@ export function HelperCard({ volunteer, assignedCategoryIds }: Props) {
   return (
     <div
       id={`helper-${volunteer.id}`}
-      className="rounded-lg border border-zinc-800 bg-zinc-900 p-4 transition-shadow scroll-mt-6"
+      className="rounded-lg border border-zinc-800 bg-zinc-900 transition-shadow scroll-mt-6"
     >
-      <div className="flex items-baseline justify-between gap-2">
-        <div className="font-medium">{name}</div>
-        {time && (
-          <div className="text-xs text-zinc-500 shrink-0 tabular-nums">{time}</div>
-        )}
-      </div>
-
-      {hasGeneral && (
-        <div className="mt-2">
-          <span
-            className="text-xs rounded-full bg-amber-500/15 border border-amber-500/40 text-amber-200 px-2 py-0.5"
-            title="Flexible — available for any in-event role"
-          >
-            General event support
-          </span>
+      <button
+        type="button"
+        onClick={() => toggle(volunteer.id)}
+        className="w-full text-left p-4 active:bg-zinc-800/50 transition-colors"
+        aria-expanded={isOpen}
+      >
+        <div className="flex items-baseline justify-between gap-2">
+          <div className="font-medium">{name}</div>
+          {time && (
+            <div className="text-xs text-zinc-500 shrink-0 tabular-nums">
+              {time}
+            </div>
+          )}
         </div>
-      )}
 
-      <div className="mt-3 flex flex-col gap-1 text-sm">
-        {volunteer.cell && (
-          <a
-            href={`tel:${volunteer.cell.replace(/\D/g, '')}`}
-            className="text-zinc-300 hover:text-zinc-100 underline-offset-2 hover:underline tabular-nums w-fit"
-          >
-            {formatCell(volunteer.cell)}
-          </a>
+        {hasGeneral && (
+          <div className="mt-2">
+            <span
+              className="text-xs rounded-full bg-amber-500/15 border border-amber-500/40 text-amber-200 px-2 py-0.5"
+              title="Flexible — available for any in-event role"
+            >
+              General event support
+            </span>
+          </div>
         )}
-        {volunteer.email && (
-          <a
-            href={`mailto:${volunteer.email}?subject=${encodeURIComponent('Voices of Strength Open Mic')}`}
-            className="text-zinc-300 hover:text-zinc-100 underline-offset-2 hover:underline truncate w-fit"
-          >
-            {volunteer.email}
-          </a>
-        )}
-      </div>
 
-      {orderedRoles.length > 0 && (
-        <div className="mt-3">
-          <p className="text-xs text-zinc-500 uppercase tracking-wider mb-1.5">
-            Roles
-          </p>
-          <div className="flex flex-wrap gap-1.5">
+        {orderedRoles.length > 0 && (
+          <div className="mt-2 flex flex-wrap gap-1.5">
             {orderedRoles.map((cat) => {
               const isAssigned = assignedCategoryIds.includes(cat.id);
               const isUnconfirmed =
                 isAssigned && needsConfirmation(cat.id, volunteer.categories);
-
               let pillClass = 'text-xs rounded-full px-2 py-0.5 ';
-              let pillTitle: string | undefined;
+              let pillTitle: string;
               if (isUnconfirmed) {
                 pillClass +=
                   'bg-red-500/15 border border-red-500/40 text-red-200';
@@ -124,7 +113,6 @@ export function HelperCard({ volunteer, assignedCategoryIds }: Props) {
                   'bg-zinc-800 border border-zinc-700 text-zinc-300';
                 pillTitle = 'Signed up but not yet assigned';
               }
-
               return (
                 <span key={cat.id} className={pillClass} title={pillTitle}>
                   {cat.name}
@@ -132,27 +120,60 @@ export function HelperCard({ volunteer, assignedCategoryIds }: Props) {
               );
             })}
           </div>
-        </div>
-      )}
+        )}
+      </button>
 
-      {unconfirmed.map((catId) => {
-        const cat = taskCatLookup.get(catId);
-        if (!cat) return null;
-        return (
-          <ConfirmAssignmentButton
-            key={catId}
-            volunteerId={volunteer.id}
-            categoryId={catId}
-            categoryName={cat.name}
-          />
-        );
-      })}
+      <AnimatePresence initial={false}>
+        {isOpen && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2, ease: 'easeOut' }}
+            style={{ overflow: 'hidden' }}
+          >
+            <div className="px-4 pb-4 -mt-1">
+              <div className="flex flex-col gap-1 text-sm">
+                {volunteer.cell && (
+                  <a
+                    href={`tel:${volunteer.cell.replace(/\D/g, '')}`}
+                    className="text-zinc-300 hover:text-zinc-100 underline-offset-2 hover:underline tabular-nums w-fit"
+                  >
+                    {formatCell(volunteer.cell)}
+                  </a>
+                )}
+                {volunteer.email && (
+                  <a
+                    href={`mailto:${volunteer.email}?subject=${encodeURIComponent('Voices of Strength Open Mic')}`}
+                    className="text-zinc-300 hover:text-zinc-100 underline-offset-2 hover:underline truncate w-fit"
+                  >
+                    {volunteer.email}
+                  </a>
+                )}
+              </div>
 
-      {volunteer.note && (
-        <div className="mt-3 text-xs text-zinc-400 italic border-l-2 border-zinc-700 pl-2 break-words">
-          {volunteer.note}
-        </div>
-      )}
+              {unconfirmed.map((catId) => {
+                const cat = taskCatLookup.get(catId);
+                if (!cat) return null;
+                return (
+                  <ConfirmAssignmentButton
+                    key={catId}
+                    volunteerId={volunteer.id}
+                    categoryId={catId}
+                    categoryName={cat.name}
+                  />
+                );
+              })}
+
+              {volunteer.note && (
+                <div className="mt-3 text-xs text-zinc-400 italic border-l-2 border-zinc-700 pl-2 break-words">
+                  {volunteer.note}
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
