@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { submitSignup } from '@/lib/actions';
 import { CATEGORIES } from '@/lib/categories';
 import { Checkbox } from '@/components/Checkbox';
+import { SubmitButton } from '@/components/SubmitButton';
 
 type Initial = {
   id?: string;
@@ -196,12 +197,12 @@ export function SignupForm({ counts, initial }: Props) {
         </p>
       </div>
 
-      <button
-        type="submit"
-        className="w-full rounded-lg bg-zinc-100 text-zinc-900 font-medium py-3 hover:bg-white transition-all active:scale-[0.98]"
+      <SubmitButton
+        className="w-full rounded-lg bg-zinc-100 text-zinc-900 font-medium py-3 hover:bg-white active:bg-zinc-300 transition-all active:scale-[0.98]"
+        pendingChildren={isEdit ? 'Updating…' : 'Submitting…'}
       >
         {isEdit ? 'Update sign-up' : 'Submit sign-up'}
-      </button>
+      </SubmitButton>
     </form>
   );
 }

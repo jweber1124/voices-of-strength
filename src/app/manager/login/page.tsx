@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { login } from '@/lib/manager-auth';
+import { SubmitButton } from '@/components/SubmitButton';
 
 type Props = {
   searchParams: Promise<{ error?: string; next?: string }>;
@@ -46,12 +47,12 @@ export default async function ManagerLoginPage({ searchParams }: Props) {
             <p className="text-sm text-red-400">Incorrect password. Try again.</p>
           )}
 
-          <button
-            type="submit"
+          <SubmitButton
             className="w-full rounded-lg bg-zinc-100 text-zinc-900 font-medium py-2.5 hover:bg-white active:bg-zinc-300 active:scale-[0.98] transition-all"
+            pendingChildren="Signing in…"
           >
             Sign in
-          </button>
+          </SubmitButton>
         </form>
         </div>
       </div>

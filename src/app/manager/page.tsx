@@ -225,7 +225,7 @@ function EmailAllHelpersLink({ volunteers }: { volunteers: Volunteer[] }) {
         target="_blank"
         rel="noopener noreferrer"
         title="Open directly in Gmail web"
-        className="text-xs rounded-lg border border-zinc-700 bg-zinc-800 text-zinc-200 px-2.5 py-1 hover:bg-zinc-700 active:bg-zinc-700 active:scale-95 transition-all"
+        className="hidden sm:inline-block text-xs rounded-lg border border-zinc-700 bg-zinc-800 text-zinc-200 px-2.5 py-1 hover:bg-zinc-700 active:bg-zinc-700 active:scale-95 transition-all"
       >
         via Gmail
       </a>
